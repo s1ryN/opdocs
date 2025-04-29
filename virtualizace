@@ -1,0 +1,56 @@
+1, nainstalovat: virtualbox (virtualbox.org), virtualbox extension pack (virtualbox.org/wiki/Downloads), Windows 10 22H2, Windows server 2022
+
+2, dát do virtualbox, extension pack: tools > extension > přidat 
+
+3, připravit iso pro instalaci windows 10, otevřít MediaCreationTool_22H2, hlavně nedát upgrade this pc now a vybrat ISO file
+
+4, ve virtuálu dát new, (jméno, vybrat ISO windows 10 a zmáčknout skip unattended instalation), hardware, disk, zapnout
+
+5, instalace windows: po objevení klíče dát nemám klíč, vybrat windows 10 pro, dát vlastní jenom nainstalovat windows, jednotky disků: odstranit několik až tam bude jen jeden (nepřidělené místo na jednotce 0), až se objeví libovolnou klávesnici spustíte system z disku CD nebo DVD tak nic nezmáčknout, nastavit pro osobní použití, až tam bude přidat účet (zmáčknout dole nalevo účet offline), pak omezené prostředí, vytvořit uživatele 
+
+6, když se dostaneme na desktop, dát nahoře devices > insert guest additions CD image, otevřít průzkumník souborů, otevřít virtual box a v něm VBoxWindowsAdditions
+
+7, změnit jméno: zobrazit název počítače > zmáčknout přejmenovat tento počítač, třeba PC1
+
+8, vypnout pc a naklonovat ve virtuálu - pravé tlačítko > clone (název, full done)
+
+9 po naklonování, zapnout pro jistotu, poté ve virtuálu dát settings a network a změnit MAC adresu
+
+10, vytvořit windows server: vybrat iso image, zmáčknout skip unattended instalation, hardware (lepši než ty normální Windows) zapnout
+
+11, ins talace: vybrat Windows server 2022 Standard Evaluation (desktop expirience), vybrat heslo administratorovi, když chci dát CTRL + ALT + DELETE: nahoře nalove dát input, keyboard
+
+12, když jsme na desktopu, znova dát 6
+
+13, přidat role adds a dns a dhcp: manage > add roles and features > trochu proklikat > zmáčknout adds a dns
+
+14, vytvořit doménu: napravo nahoře svítí žlutý trojúhelník, ten dát a tam zmáčknout promote this server to a domain controller, dát add new forest (něco.něco, přidat heslo)
+
+15, vytvoření NAT network: jít ve virtuálu do tools > network, vybrat NAT network a dát create, můžeme vypnout DHCP
+
+16, po vytvoření jít do každého stroje postupně a dát settings, network a vybrat natnetwork a spustit > po otevření dáme next a poak skip AD uthorization nebo co půjde
+
+17, nastavení IP: control panel > network a internet > network and sharing center > change adapter settings > vybrat ethernet > propterties > protocol version 4
+ IP: IP adress: 10.0.2.11, maska: 255.255.255.0, default gateway: 10.0.2.1, dns server: 10.0.2.11 a dát okay (následně zajít do cmd a dát ipconfig, když to ukáže u IPv4 169.něco, tak jít zpátky do IP adres a změnit z 11 na 12 a restartovat pc (udělat na všech 3 stojích)
+
+18, napravo nahoře v server manager znova žlutý trojúhelník a dát dhcp configuration a tahle část done. Následně tools DHCP: objeví se nová část tam to rozklikneme až uvidímě IPv4 > na to pravé tlačítko a dáme new scope a tam pak dáme název (třeba počítače) > startovací IP adresa 10.0.2.0 a konečná 10.0.2.255 a maska 255.255.255.0 jestli nejde tak nechat 255.0.0.0 (IP adresu udělat podle toho jak je natnetwork), dávat next dokud neuvidíme router a tam dát třeba IP adresu 10.0.2.1, poté dns server, který jsme si už vytvořili a necháme ho tam a zbytek nechat jak to je
+
+19, zapnout windows server: tools, active directory sites and services > rozkliknout naší doménu > rozkliknout users a nad tím dát create a new user > přidat jméno a příjmení a hlavně user logon name ZAPAMATOVAT!!!, přidat heslo a vypnout user must change password at next logon a zapnout password never expires (TOTO UDĚLAT NA OBOU STROJÍCH, ne server)
+
+20, přidání usera do domény: zapnout první stroj windows 10 a vyhledat: přidat přístup do práce nebo školy > dát připojit > zmáčknout alternativní akci > zadat jméno domény > zadat uživatele jméno a heslo a restart, po restartu se připojit userem (TOTO UDĚLAT NA OBOU STROJÍCH)
+
+21, kouknout do serveru: kouknout do active directory users and computers a kouknout do domény a pc jestli tam jsou oba pc
+
+22, server manager > tools > group policy managment, znova active directory user and computers, v group policy managment vytvořit novou organizační jednotku (pravým tlačítkem na naší doméně a vybrat new organizational unit (třeba učitelé) + přidat uživatele do té jednotky (v active directory users and services dát pravým na uživatele a dát move a vybrat tu organizační jednotku a dát ok)
+
+23, dát group policy object: v group policy managment vybrat group policy objects v naší doméně > pravým tlačítkem dát v pravé části a dát new a pojmenovat poté ok, následně na to dát pravým a dát edit > uvidíme nové věci a je tam computer a user configuration a tam pak vybírat pravidla pro usery a pc (třeba pro uživatele najít nějaké pravidlo rokliknout a vybrat enabled nebo disabled nalevo a dát apply a ok a pak tu část zavřít. následně znova otevřít group policy managment rozkliknout to group policy object, které jsme si vytvořili (tam se můžeme podívat do setting a kouknout se jestli tam je to pravidlo.
+
+24, linknutí gpo: zajdeme si na tu organizační jednotku kam to máme dát > pravé tlačítko na to a dát link an existing gpo a vybrat to které potřebujem a dáme ok
+
+25, zapnout stroj, na kterým je ten uživatel pod tou organizační jednotkou, přihlásit se a jestli to jde, tak vyzkoušet to gpo, které jsme mu dali (když to nebude fungovat, tak v cmd gpupdate /force
+
+26, nastavení pravidla pro počítač > stejné jak uživatel > vytvořit novou organizační jednotku do ní ten pc a vědět jaký pc přesně chceme (v tom pc, který přesně chceme dáme zobrazit název počítače a tam uvidíme jak se jmenuje
+
+27, přidání pc do organizační jednotky: vytvořím organizační jednotku v group policy objects a pak dáme v active directory users and computers pravé tlačítko na ten pc, který chceme a dát move a do té organizační jednotky a znova udělat stejně a přidat nějaké pravidlo
+
+MENŠÍ POMŮCKA PRO PRAVIDLA A HLEDÁNÍ: stránka gpsearch.azurewebsites.net
